@@ -6,9 +6,9 @@
    (Mutal Exclusion)
   
    Compilar con 
-        g++ -std=c++11 -pedantic -Wall  \
-            -o 05_sumatoria_with_mutex  \
-            05_sumatoria_with_mutex.cpp \
+        g++ -std=c++11 -pedantic -Wall      \
+            -o 05_sumatoria_with_mutex.exe  \
+            05_sumatoria_with_mutex.cpp     \
             -pthread
   
    El ejemplo deberia imprimir por pantalla el 
@@ -18,7 +18,7 @@
    race condition, correr esto:
      for i in {0..1000}
      do
-        ./05_sumatoria_with_mutex
+        ./05_sumatoria_with_mutex.exe
      done | uniq
   
 */

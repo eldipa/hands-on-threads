@@ -8,10 +8,10 @@
    functor (usamos composicion)
   
    Compilar con 
-     g++ -std=c++11 -pedantic -Wall              \
-         -o 02_is_prime_parallel_by_composition  \
-         02_is_prime_parallel_by_composition.cpp \
-         -pthread
+   g++ -std=c++11 -pedantic -Wall               \
+     -o 02_is_prime_parallel_by_composition.exe  \
+     02_is_prime_parallel_by_composition.cpp     \
+     -pthread
   
 */
 
@@ -105,10 +105,10 @@ int main() {
 
 /* [4]
    Corre el ejecutable con "time":
-    time ./02_is_prime_parallel_by_composition
+    time ./02_is_prime_parallel_by_composition.exe
   
    Compara los tiempos con la ejecucion de
-   01_is_prime_sequential
+   01_is_prime_sequential.exe
 
    Mejoro el tiempo "real"? y el "user"?
 

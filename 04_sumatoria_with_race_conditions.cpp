@@ -6,9 +6,9 @@
   
    Compilar con 
      g++ -std=c++11 -pedantic -Wall              \
-          -o 04_sumatoria_with_race_conditions   \
-          04_sumatoria_with_race_conditions.cpp  \
-          -pthread
+        -o 04_sumatoria_with_race_conditions.exe \
+        04_sumatoria_with_race_conditions.cpp    \
+        -pthread
   
    Este ejemplo calcula una suma y el resultado final
    deberia ser 479340.
@@ -21,7 +21,7 @@
    triggerearlo), correr esto en la consola:
      for i in {0..1000}
      do
-        ./04_sumatoria_with_race_conditions; 
+        ./04_sumatoria_with_race_conditions.exe; 
      done | uniq
   
 */

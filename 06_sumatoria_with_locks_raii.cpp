@@ -3,16 +3,16 @@
    liberacion de un mutex: clase Lock
   
    Compilar con 
-        g++ -std=c++11 -pedantic -Wall       \
-            -o 06_sumatoria_with_locks_raii  \
-            06_sumatoria_with_locks_raii.cpp \
+        g++ -std=c++11 -pedantic -Wall           \
+            -o 06_sumatoria_with_locks_raii.exe  \
+            06_sumatoria_with_locks_raii.cpp     \
             -pthread
   
    El ejemplo deberia imprimir por pantalla el 
    numero 479340.
      for i in {0..1000}
      do
-        ./06_sumatoria_with_locks_raii
+        ./06_sumatoria_with_locks_raii.exe
      done | uniq
   
 */

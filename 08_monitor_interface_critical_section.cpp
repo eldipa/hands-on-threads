@@ -8,10 +8,10 @@
    monitorea los acceso al objeto compartido).
   
    Compilar con 
-    g++ -std=c++11 -pedantic -Wall               \
-       -o 08_monitor_interface_critical_section  \
-       08_monitor_interface_critical_section.cpp \
-       -pthread
+ g++ -std=c++11 -pedantic -Wall                  \
+   -o 08_monitor_interface_critical_section.exe  \
+   08_monitor_interface_critical_section.cpp     \
+   -pthread
   
    El ejemplo deberia imprimir por pantalla el 
    numero 1 ya que si bien hay varios numeros
@@ -19,10 +19,10 @@
   
    Para verificar que efectivamente no hay una 
    race condition, correr esto:
-     for i in {0..1000}
-     do
-        ./08_monitor_interface_critical_section
-     done | uniq
+    for i in {0..1000}
+    do
+       ./08_monitor_interface_critical_section.exe
+    done | uniq
 
    Funciono?
   

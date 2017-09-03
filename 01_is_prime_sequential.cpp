@@ -6,8 +6,8 @@
    vamos a sobrecargarle el operador call.
 
    Compilar con 
-      g++ -std=c++11 -pedantic -Wall  \
-            -o 01_is_prime_sequential \
+      g++ -std=c++11 -pedantic -Wall      \
+            -o 01_is_prime_sequential.exe \
             01_is_prime_sequential.cpp
 */
 
@@ -118,7 +118,7 @@ int main() {
 
 /* [9]
    Corre el ejecutable con "time":
-    time ./01_is_prime_sequential
+    time ./01_is_prime_sequential.exe
   
    Que significan esas mediciones?:
      real 
