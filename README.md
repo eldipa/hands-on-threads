@@ -1,13 +1,9 @@
-# Tutoriales interactivos de programacion multithreading
+# Threads
 
-Lee el codigo fuente de los archivos en orden, comenzando por 01_is_prime_sequential.cpp
+En este repositorio se encuentra:
 
-En cada tutorial encontraras comentarios para guiarte en los ejercicios.
-Debes seguirlos en orden comenzando por [1], [2], ...
+* Un apunte de la clase de threads, con las diapositivas y código utilizado para las demos.
 
-Este es un tutorial *interactivo* y depende de vos hacerlo; contiene 
-informacion muy *valiosa* para entender como los threads funcionan
-asi como tambien los principales errores y tecnicas para solucionarlos.
+* Un tutorial interactivo que nos enseña de forma práctica a trabajar con threads y a reconocer (y solucionar) problemas más frecuentes al trabajar con concurrencia.
 
-Tu camino empieza en 01_is_prime_sequential.cpp
-
+Si tienen comentarios o sugerencias, no duden en subir un issue o un pull request.
