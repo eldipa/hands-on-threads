@@ -10,6 +10,8 @@ add_executable(contador-04 contador-04.cpp)
 add_executable(deadlock deadlock.cpp AccountBad.cpp)
 add_executable(not-deadlock deadlock-ok.cpp Account.cpp Lock.cpp)
 
+add_executable(random-gen random-gen.cpp)
+
 target_link_libraries(threads-c pthread)
 target_link_libraries(contador-02 pthread)
 target_link_libraries(contador-03 pthread)

@@ -85,16 +85,81 @@ Esta implementación provee una función llamada *pthread_create*, que tiene com
 * Un puntero a función que recibe un único puntero void como parámetro.
 * Un puntero void para pasarle información al thread.
 
-**Ver demo/threads-c.c**
+**Ver src/threads-c.c**
 
 #### Threads en la biblioteca STL de C++11
 
 En el standard *C++11* se agregó threads a la biblioteca. La nueva clase *std::thread* puede ser usada de dos formas posibles: con funciones, de forma similar a pthread_create, o con un objeto *functor*, es decir, de una clase donde el operador paréntesis está sobreescrito.
 
-(Agregar ejemplos)
+**Ver src/Thread.cpp, agregar más ejemplos**
 
 ## Contador de palabras concurrente
 
+### Contador secuencial
+
+Vamos a hacer una aplicación que lea las ocurrencias de un caracter determinado en una lista de archivos pasados por parámetro.
+
+En nuestra primera iteración, el programa será secuencial. La implementación, sencilla, se puede ver en *contador-01.cpp*
+
+Para realizar benchmarks de la aplicación, utilizamos el comando *time*. Se puede ver que el resultado viene en 3 filas:
+
+~~~
+real    0m0.000s
+user    0m0.000s
+sys     0m0.000s
+~~~
+
+* *real* es el tiempo de reloj, como si lo cronometraramos.
+* *user* es el tiempo de CPU consumido (por instrucciones de usuario). Si la aplicación tiene múltiples hilos, se los suma. El tiempo en que la aplicación está bloqueada o con sleep no se computa.
+* *sys* es el tiempo de CPU consumido en instrucciones del kernel.
+
+Para probar esta aplicación se recomienda generar un archivo considerablemente grande con la aplicación *random-gen* cuya fuente se encuentra en la misma carpeta.
+
+
+### Contadores independientes en múltiples hilos
+
+Vamos a optimizar la aplicación anterior ejecutando una instancia de contador de caracteres en un hilo aparte para cada archivo pasado por parámetro.
+
+En esta iteración implementamos el contador de caracteres como un objeto *functor*, que va a correr sobre un hilo aparte. Este objeto *CharCounter* tiene como atributo un contador que se utilizará después de que el hilo haya terminado su ejecución. La implementación se puede ver en *contador-02.cpp*.
+
+Notar que, si los archivos a procesar son muy grandes, se nota una baja considerable en el tiempo en que tarda en procesar todos los archivos.
+Notar también que, a medida que se van agregando más archivos, la mejora del tiempo va achicándose.
+El número óptimo de hilos suele ser la cantidad de CPUs virtuales que tenga la máquina en la que esté corriendo. Esto se puede usando el comando *lscpu*.
+
+
+### Contador compartido, primer intento
+
+Ahora modificamos la clase *CharCounter* para que, en vez de tener un contador propio, tenga un contador compartido con los otros contadores (por si, por ejemplo, queremos informar al usuario sobre el progreso de la aplicación).
+
+La implementación en *contador-03.cpp* ahora tiene un contador en el hilo main, y los objetos CharCounter se construyen con una referencia al mismo
+
+¿Qué pasa cuando lo ejecuto con grandes volúmenes de datos?
+
+Se puede ver que los caracteres detectados "son menos". Lo que está ocurriendo realmente es lo que se conoce como **race condition**: los contadores son accedidos por más de un hilo a la vez, uno lee un valor, lo modifica, pero antes que logre guardarlo, otro hilo también lo modifica y lo guarda.
+El primer hilo finalmente guarda *su* modificación, sin enterarse de los cambios ingresados por el segundo hilo, corrompiéndose la información.
+
+Este tipo de errores sucede aleatoriamente, y no siempre es tan evidente el origen del mismo. Por esta razón debuggear una aplicación concurrente es muy complicado y no puede hacerse con un debugger como tradicionalmente hacíamos.
+
+Para solucionar este problema es necesario identificar cuál es la *critical section* (sección crítica) del programa, es decir, la sección de código que no soporta correctamente la concurrencia. En nuestro ejemplo, la sección crítica es el acceso y actualización del contador, por lo que sincronizar el acceso al contador debería reparar la aplicación.
+
+
+### Contador compartido, final
+
+En este ejemplo final, *contador-04.cpp*, se agrega un mecanismo de sincronización, llamado **Mutex** para acceder al recurso compartido.
+
+El resultado vuelve a ser el correcto, sin embargo, si se vuelve a medir el performance de la aplicación frente a la implementación 2, se puede apreciar que el tiempo real y el tiempo del sistema aumenta. Esto se debe a que las llamadas a *lock()* y *unlock()* del mutex requieren llamadas al sistema para bloquear y desbloquear otros hilos.
+
+Con este ejemplo se puede apreciar que mayor concurrencia no siempre equivale a mayor rendimiento, y que a mayor paralelismo, menos problemas de sincronización hay
+
+## Deadlocks
+
+**Agregar**
+Ver **deadlock.cpp** y **deadlock-ok**, por qué es que una implementación de account falla y la otra no.
+
+
+## Monitores
+
+**Definir monitores** (wrapper de una clase, de forma tal que quede thread-safe...)
 
 
 # Bibliografía
