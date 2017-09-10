@@ -41,6 +41,22 @@ void Deadlocker::printResult() const {
 
 void Deadlocker::operator()() {
 	for (int i = 0; i < 100000; ++i) {
+                /* Aqui esta el deadlock,
+                 * Si un Deadlocker tiene A, B como accountFrom y accountTo
+                 * y otro Deadlocker tiene B, A como accountFrom y accountTo
+                 *
+                 * Luego, al correr ambos en paralelo podrian llegar al siguiente
+                 * estado:
+                 *
+                 *      1er Deadlocker                  2do Deadlocker
+                 *      A.lock() (good)
+                 *                                      B.lock() (good)
+                 *      B.lock() (blocked)
+                 *             :                        A.lock() (blocked)
+                 *             :                                :
+                 *             :                                :
+                 *        (blocked)                         (blocked)
+                 *  */
 		accountFrom.lock();
 		accountTo.lock();
 
