@@ -22,5 +22,6 @@ int countChar(char* filename, char myChar) {
 			counter++;
 		}
 	}
+        fclose(fd);
 	return counter;
 }

@@ -60,6 +60,7 @@ void CharCounter::operator() () {
 			this->result++;
 		}
 	}
+        fclose(fd);
 }
 
 CharCounter::CharCounter(const char* filename, char countChar) :

@@ -49,6 +49,7 @@ void CharCounter::operator() () {
 			mutex.unlock();
 		}
 	}
+        fclose(fd);
 }
 
 CharCounter::CharCounter(const char* filename, char countChar,
