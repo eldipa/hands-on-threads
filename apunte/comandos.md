@@ -7,6 +7,8 @@ Para compilar es necesario *cmake* y gcc compatible con C++11
 Utilizar CMake para generar el makefile necesario para compilar las aplicaciones. En un entorno unix se puede hacer, desde la carpeta src:
 
 ~~~{.bash}
+# deberias estar posicionado en el mismo lugar que este .md
+cd src
 mkdir build
 cd build
 cmake ..
@@ -35,6 +37,7 @@ make
 ### Ejemplo de ejecución
 
 ~~~{.bash}
+# deberias estar posicionado en la carpeta build
 ./random-gen 1200400
-time contador-01 random.txt
+time ./contador-01 random.txt
 ~~~
