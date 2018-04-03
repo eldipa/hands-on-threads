@@ -1,23 +1,23 @@
 /*
-   [1] Ejemplo de encapsulamiento de un objeto 
+   [1] Ejemplo de encapsulamiento de un objeto
    compartido y su mutex en un unico objeto.
-   
-   Este objeto protegido se lo conoce como 
+
+   Este objeto protegido se lo conoce como
    **monitor** (si, lo se, no es un nombre copado,
-   de alguna forma quiere decir que el objeto 
+   de alguna forma quiere decir que el objeto
    monitorea los acceso al objeto compartido).
-  
-   Compilar con 
+
+   Compilar con
  g++ -std=c++11 -pedantic -Wall                  \
    -o 08_monitor_interface_critical_section.exe  \
    08_monitor_interface_critical_section.cpp     \
    -pthread
-  
-   El ejemplo deberia imprimir por pantalla el 
+
+   El ejemplo deberia imprimir por pantalla el
    numero 1 ya que si bien hay varios numeros
    primos, solo queremos si hay (1) primos o no (0)
-  
-   Para verificar que efectivamente no hay una 
+
+   Para verificar que efectivamente no hay una
    race condition, correr esto:
     for i in {0..1000}
     do
@@ -25,7 +25,7 @@
     done | uniq
 
    Funciono?
-  
+
 */
 
 #include <iostream>
@@ -38,7 +38,7 @@
 class Thread {
     private:
         std::thread thread;
- 
+
     public:
         Thread () {}
 
@@ -89,8 +89,8 @@ class Lock {
 
 class ResultProtected { // aka monitor
     private:
-        std::mutex m;        
-        unsigned int result; 
+        std::mutex m;
+        unsigned int result;
 
     public:
         ResultProtected(unsigned int v): result(v) {}
@@ -98,8 +98,8 @@ class ResultProtected { // aka monitor
         /* [3] *** Importante ***
            Cada metodo "protegido" de un monitor
            deberia ser una critical section
-          
-           Poner Locks por todos lados ***NO** es 
+
+           Poner Locks por todos lados ***NO** es
            una buena idea. Solo hara que las cosas
            se cuelguen y no funcionen
 
@@ -118,10 +118,10 @@ class ResultProtected { // aka monitor
 
         /* [5] Nuestras critical condition son
            get_val y inc_if_you_are_zero
-          
+
            Descomentar la siguiente implementacion
            y *borrar* el metodo inc:
-           
+
            Jamas implementen un metodo protegido
            que no represente a una critical section
            Alguien desprevenido podria llegar usar
@@ -139,21 +139,21 @@ class ResultProtected { // aka monitor
 
 };
 
-class AreAnyPrime : public Thread { 
+class AreAnyPrime : public Thread {
     private:
         unsigned int n;
-        ResultProtected &result; 
+        ResultProtected &result;
 
     public:
-        AreAnyPrime(unsigned int n, 
-                ResultProtected &result) : 
-            n(n), 
+        AreAnyPrime(unsigned int n,
+                ResultProtected &result) :
+            n(n),
             result(result) {}
-        
+
         virtual void run() override {
-            /* Si ya encontramos un numero primo, 
+            /* Si ya encontramos un numero primo,
              * salimos */
-            if (result.get_val() >= 1) 
+            if (result.get_val() >= 1)
                 return;
 
             /* Y si no, vemos si nuestro numero es
@@ -169,11 +169,11 @@ class AreAnyPrime : public Thread {
 
             /* [2] Es este inc correcto? Es nuestra
                critical section?
-              
-               La respuesta es no: queremos 
+
+               La respuesta es no: queremos
                incrementar solo si el contador es
                0.
-              
+
                Si preguntamos con get_val y luego
                incrementamos con inc, no estamos
                haciendo una unica operacion atomica
@@ -192,21 +192,21 @@ class AreAnyPrime : public Thread {
 
 
 int main() {
-    unsigned int nums[N] = { 132131, 132130891, 31371, 
-                             132130891, 891, 123891, 
+    unsigned int nums[N] = { 132131, 132130891, 31371,
+                             132130891, 891, 123891,
                              132130891, 132130891,
                              132130891 };
     ResultProtected result(0);
- 
+
     std::vector<Thread*> threads;
 
     for (int i = 0; i < N; ++i) {
         threads.push_back(new AreAnyPrime(
-                            nums[i], 
+                            nums[i],
                             result
                         ));
     }
-    
+
     for (int i = 0; i < N; ++i) {
         threads[i]->start();
     }
@@ -215,23 +215,23 @@ int main() {
         threads[i]->join();
         delete threads[i];
     }
-    
+
     std::cout << result.get_val();  // 1
     std::cout << "\n";
 
     return 0;
 }
 /* [7]
-  
+
    Recompilar y volver a probar para verificar que
    la race condition fue removida
-  
+
    Conclusion:
-   Metodos protegidos MAS una buena interfaz del 
+   Metodos protegidos MAS una buena interfaz del
    monitor diseñada para resolver el problema
    son los que nos evitan las race condition.
-  
-   Se deben encontrar primero las regiones criticas 
+
+   Se deben encontrar primero las regiones criticas
    y para cada region critica se debe implementar
    un metodo en el monitor protegido con un mutex.
 

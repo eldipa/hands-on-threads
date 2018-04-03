@@ -1,28 +1,28 @@
 /*
-   [1] Ejemplo de encapsulamiento de un objeto 
+   [1] Ejemplo de encapsulamiento de un objeto
    compartido y su mutex en un unico objeto.
-   
-   Este objeto protegido se lo conoce como 
+
+   Este objeto protegido se lo conoce como
    **monitor** (si, lo se, no es un nombre copado,
-   de alguna forma quiere decir que el objeto 
+   de alguna forma quiere decir que el objeto
    monitorea los acceso al objeto compartido).
-  
-   Compilar con 
+
+   Compilar con
         g++ -std=c++11 -pedantic -Wall        \
             -o 07_sumatoria_with_monitor.exe  \
             07_sumatoria_with_monitor.cpp     \
             -pthread
-  
-   El ejemplo deberia imprimir por pantalla el 
+
+   El ejemplo deberia imprimir por pantalla el
    numero 479340.
-  
-   Para verificar que efectivamente no hay una 
+
+   Para verificar que efectivamente no hay una
    race condition, correr esto:
      for i in {0..1000}
      do
         ./07_sumatoria_with_monitor.exe
      done | uniq
-  
+
 */
 
 #include <iostream>
@@ -35,7 +35,7 @@
 class Thread {
     private:
         std::thread thread;
- 
+
     public:
         Thread () {}
 
@@ -91,8 +91,8 @@ class ResultProtected { // aka monitor
            su mutex y tiene al objeto compartido
            que hay que proteger
         */
-        std::mutex m;        
-        unsigned int result; 
+        std::mutex m;
+        unsigned int result;
 
     public:
         ResultProtected(unsigned int v): result(v) {}
@@ -100,8 +100,8 @@ class ResultProtected { // aka monitor
         /* [3] *** Importante ***
            Cada metodo "protegido" de un monitor
            deberia ser una critical section
-          
-           Poner Locks por todos lados ***NO** es 
+
+           Poner Locks por todos lados ***NO** es
            una buena idea. Solo hara que las cosas
            se cuelguen y no funcionen
         */
@@ -121,23 +121,23 @@ class Sum : public Thread {
     private:
         unsigned int *start;
         unsigned int *end;
-        
-        /* [4] Una referencia al monitor: 
+
+        /* [4] Una referencia al monitor:
            el objeto compartido y su mutex
-          
-           En general los objetos activos (hilos) 
+
+           En general los objetos activos (hilos)
            no deberian tener referencias a mutexes
            ni manejarlos sino tener referencias a
            los monitores y que estos coordinen el
            acceso y protejan al recurso compartido
         */
-        ResultProtected &result; 
+        ResultProtected &result;
 
     public:
-        Sum(unsigned int *start, 
-                unsigned int *end, 
+        Sum(unsigned int *start,
+                unsigned int *end,
                 ResultProtected &result) :
-            start(start), end(end), 
+            start(start), end(end),
             result(result) {}
 
         virtual void run() {
@@ -148,16 +148,16 @@ class Sum : public Thread {
 
             /* [5]  No nos encargamos de proteger
                el recurso compartido (unsigned int
-               result) sino que el objeto protegido 
+               result) sino que el objeto protegido
                (monitor) de tipo ResultProtected sera
                el responsable de protegerlo.
 
                Encapsulamos toda la critical section
                CS en un unico metodo del monitor.
-            */ 
-            result.inc(temporal_sum); 
+            */
+            result.inc(temporal_sum);
         }
-        
+
         // ***Pregunta***: Usando un monitor con todos sus metodos protegidos evitan una race condition siempre?
         // ***Respuesta***: NO, es COMPLETAMENTE FALSO
         //
@@ -191,9 +191,9 @@ class Sum : public Thread {
         //
         // // se ve que hay dos regiones criticas en vez de una? Al final hay una race condition
         //
-        // ***Solucion***: 
+        // ***Solucion***:
         // void run() {
-        //    result_protected.inc_only_if_you_are_in_zero(1); 
+        //    result_protected.inc_only_if_you_are_in_zero(1);
         // }
         //
         // void ResultProtected::inc_only_if_you_are_in_zero(unsigned int s) {
@@ -213,17 +213,17 @@ class Sum : public Thread {
 };
 
 int main() {
-    unsigned int nums[N] = { 132131, 1321, 31371, 
-                             30891, 891, 123891, 
-                             3171, 30891, 891, 
+    unsigned int nums[N] = { 132131, 1321, 31371,
+                             30891, 891, 123891,
+                             3171, 30891, 891,
                              123891 };
     ResultProtected result(0);
- 
+
     std::vector<Thread*> threads;
 
     for (int i = 0; i < N/2; ++i) {
         threads.push_back(new Sum(
-                                    &nums[i*2], 
+                                    &nums[i*2],
                                     &nums[(i+1)*2],
                                     result
                                 ));
@@ -237,14 +237,14 @@ int main() {
         threads[i]->join();
         delete threads[i];
     }
-    
+
     std::cout << result.get_val();  // 479340
     std::cout << "\n";
 
     return 0;
 }
 /* [6]
-   Has llegado al final del ejercicio, continua 
+   Has llegado al final del ejercicio, continua
    con el siguiente.
 */
 
