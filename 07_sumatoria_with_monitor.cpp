@@ -8,9 +8,9 @@
    monitorea los acceso al objeto compartido).
 
    Compilar con
-        g++ -std=c++11 -pedantic -Wall        \
-            -o 07_sumatoria_with_monitor.exe  \
-            07_sumatoria_with_monitor.cpp     \
+        g++ -std=c++11 -pedantic -Wall
+            -o 07_sumatoria_with_monitor.exe
+            07_sumatoria_with_monitor.cpp
             -pthread
 
    El ejemplo deberia imprimir por pantalla el

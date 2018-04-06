@@ -15,9 +15,9 @@
    "objeto activo".
 
    Compilar con
-   g++ -std=c++11 -pedantic -Wall                \
-     -o 03_is_prime_parallel_by_inheritance.exe  \
-     03_is_prime_parallel_by_inheritance.cpp     \
+   g++ -std=c++11 -pedantic -Wall
+     -o 03_is_prime_parallel_by_inheritance.exe
+     03_is_prime_parallel_by_inheritance.cpp
      -pthread
 
 */

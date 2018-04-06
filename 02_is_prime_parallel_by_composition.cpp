@@ -8,9 +8,9 @@
    functor (usamos composicion)
 
    Compilar con
-   g++ -std=c++11 -pedantic -Wall               \
-     -o 02_is_prime_parallel_by_composition.exe  \
-     02_is_prime_parallel_by_composition.cpp     \
+   g++ -std=c++11 -pedantic -Wall
+     -o 02_is_prime_parallel_by_composition.exe
+     02_is_prime_parallel_by_composition.cpp
      -pthread
 
 */

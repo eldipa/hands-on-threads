@@ -8,10 +8,10 @@
    monitorea los acceso al objeto compartido).
 
    Compilar con
- g++ -std=c++11 -pedantic -Wall                  \
-   -o 08_monitor_interface_critical_section.exe  \
-   08_monitor_interface_critical_section.cpp     \
-   -pthread
+     g++ -std=c++11 -pedantic -Wall
+       -o 08_monitor_interface_critical_section.exe
+       08_monitor_interface_critical_section.cpp
+       -pthread
 
    El ejemplo deberia imprimir por pantalla el
    numero 1 ya que si bien hay varios numeros
@@ -116,7 +116,7 @@ class ResultProtected { // aka monitor
             return result;
         }
 
-        /* [5] Nuestras critical condition son
+        /* [5] Nuestras critical sections son
            get_val y inc_if_you_are_zero
 
            Descomentar la siguiente implementacion
