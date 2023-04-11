@@ -6,11 +6,6 @@
    que el metodo pop se bloquee cuando la cola este vacia
    y se despierte cuando haya algo que sacar (cola no vacia).
 
-   Compilar con
-      g++ -std=c++11 -pedantic -Wall
-            -o 10_thread_safe_queue_with_conditional_variables.exe
-	    10_thread_safe_queue_with_conditional_variables.cpp
-
    Mientras ejecutas el ejemplo, ejecuta 'top' en otra consola
    y observa el uso de la CPU.
 

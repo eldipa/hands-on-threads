@@ -5,12 +5,6 @@
    mecanismo de coordinacion llamado Mutex
    (Mutal Exclusion)
 
-   Compilar con
-        g++ -std=c++11 -pedantic -Wall
-            -o 05_sumatoria_with_mutex.exe
-            05_sumatoria_with_mutex.cpp
-            -pthread
-
    El ejemplo deberia imprimir por pantalla el
    numero 479340 siempre.
 

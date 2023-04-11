@@ -4,12 +4,6 @@
    por multiples hilos que terminan dejando a la
    variable/objeto en un estado inconsistente
 
-   Compilar con
-     g++ -std=c++11 -pedantic -Wall              \
-        -o 04_sumatoria_with_race_conditions.exe \
-        04_sumatoria_with_race_conditions.cpp    \
-        -pthread
-
    Este ejemplo calcula una suma y el resultado final
    deberia ser 479340.
    Como siempre se suman los mismos numeros el

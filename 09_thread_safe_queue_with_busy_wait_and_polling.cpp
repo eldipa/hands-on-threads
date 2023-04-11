@@ -12,11 +12,6 @@
    en terminos de CPU pero en ciertas aplicaciones es la
    unica solucion.
 
-   Compilar con
-      g++ -std=c++11 -pedantic -Wall
-            -o 09_thread_safe_queue_with_busy_wait_and_polling.exe
-            09_thread_safe_queue_with_busy_wait_and_polling.cpp
-
    Mientras ejecutas el ejemplo, ejecuta 'top' en otra consola
    y observa el uso de la CPU.
  **/

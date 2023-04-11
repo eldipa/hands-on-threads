@@ -13,13 +13,6 @@
    Cuando el objeto functor encapsula dentro de él
    el concepto de hilo se dice que el objeto es un
    "objeto activo".
-
-   Compilar con
-   g++ -std=c++11 -pedantic -Wall
-     -o 03_is_prime_parallel_by_inheritance.exe
-     03_is_prime_parallel_by_inheritance.cpp
-     -pthread
-
 */
 
 #include <iostream>

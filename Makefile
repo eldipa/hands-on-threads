@@ -1,5 +1,4 @@
-all:
-	@echo "Este makefile solo borra los archivos objeto y ejecutables. No compila nada. Para compilar, ver el archivo fuente de cada ejemplo."
+all: f1.1 f2.1 f3.1 f4.1 f5.1 f6.1 f7.1 f8.1 f9.1 f10.1
 
 clean:
 	rm -Rf *.o *.a *.so *.exe a.out

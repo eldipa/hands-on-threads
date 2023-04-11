@@ -6,13 +6,6 @@
    Se ejecutan varios functors en paralelo en donde
    el objeto thread tiene una referencia al objeto
    functor (usamos composicion)
-
-   Compilar con
-   g++ -std=c++11 -pedantic -Wall
-     -o 02_is_prime_parallel_by_composition.exe
-     02_is_prime_parallel_by_composition.cpp
-     -pthread
-
 */
 
 #include <iostream>

@@ -4,11 +4,6 @@
    Para darle una sintaxis copada (y para que sea
    compatible con la libreria estandar de C++)
    vamos a sobrecargarle el operador call.
-
-   Compilar con
-      g++ -std=c++11 -pedantic -Wall
-            -o 01_is_prime_sequential.exe
-            01_is_prime_sequential.cpp
 */
 
 

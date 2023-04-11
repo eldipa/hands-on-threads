@@ -7,12 +7,6 @@
    de alguna forma quiere decir que el objeto
    monitorea los acceso al objeto compartido).
 
-   Compilar con
-     g++ -std=c++11 -pedantic -Wall
-       -o 08_monitor_interface_critical_section.exe
-       08_monitor_interface_critical_section.cpp
-       -pthread
-
    El ejemplo deberia imprimir por pantalla el
    numero 1 ya que si bien hay varios numeros
    primos, solo queremos si hay (1) primos o no (0)
