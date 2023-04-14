@@ -1,14 +1,14 @@
 /*
-   [1] Ejemplo de encapsulamiento de un objeto
-   compartido y su mutex en un unico objeto.
+   [1]
 
-   Este objeto protegido se lo conoce como
-   **monitor** (si, lo se, no es un nombre copado,
-   de alguna forma quiere decir que el objeto
-   monitorea los acceso al objeto compartido).
+   Un objeto compartido + mutex no alcanzan:
+   uno tiene que diseñar los métodos públicos del objeto
+   como las critical sections y protegerlas.
 
-   El ejemplo deberia imprimir por pantalla el
-   numero 1 ya que si bien hay varios numeros
+   Solo así tendrás un *monitor*
+
+   Este ejemplo debería imprimir por pantalla el
+   número 1 ya que si bien hay varios números
    primos, solo queremos si hay (1) primos o no (0)
 
    Para verificar que efectivamente no hay una
@@ -18,7 +18,12 @@
        ./08_monitor_interface_critical_section.exe
     done | uniq
 
-   Funciono?
+   Funcionó??
+
+   ~~~
+
+   El bug esta en [2] y [3].
+   El fix lo veras en [4] y [5]
 
 */
 
@@ -26,60 +31,12 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <exception>
 
 #define N 10
 
-class Thread {
-    private:
-        std::thread thread;
-
-    public:
-        Thread () {}
-
-        void start() {
-            thread = std::thread(&Thread::run, this);
-        }
-
-        void join() {
-            thread.join();
-        }
-
-        virtual void run() = 0;
-        virtual ~Thread() {}
-
-        Thread(const Thread&) = delete;
-        Thread& operator=(const Thread&) = delete;
-
-        Thread(Thread&& other) {
-            this->thread = std::move(other.thread);
-        }
-
-        Thread& operator=(Thread&& other) {
-            this->thread = std::move(other.thread);
-            return *this;
-        }
-};
-
-class Lock {
-    private:
-        std::mutex &m;
-
-    public:
-        Lock(std::mutex &m) : m(m) {
-            m.lock();
-        }
-
-        ~Lock() {
-            m.unlock();
-        }
-
-    private:
-        Lock(const Lock&) = delete;
-        Lock& operator=(const Lock&) = delete;
-        Lock(Lock&&) = delete;
-        Lock& operator=(Lock&&) = delete;
-
-};
+// Misma clase Thread que en 03_is_prime_parallel_by_inheritance.cpp
+#include "libs/thread.h"
 
 class ResultProtected { // aka monitor
     private:
@@ -90,41 +47,54 @@ class ResultProtected { // aka monitor
         ResultProtected(unsigned int v): result(v) {}
 
         /* [3] *** Importante ***
-           Cada metodo "protegido" de un monitor
-           deberia ser una critical section
+           Cada método "protegido" de un monitor
+           debería ser una critical section
 
-           Poner Locks por todos lados ***NO** es
+           Poner locks por todos lados ***NO** es
            una buena idea. Solo hara que las cosas
            se cuelguen y no funcionen
 
-           En este caso, inc no es la critical
-           section
+           Esto ya te lo dije en 07_sumatoria_with_monitor.cpp
+           y aquí vas a ver un caso explicito.
+
+           En este caso, inc() **no** es la critical
+           section real así que a pesar de protegerla
+           con un lock vamos a tener una race condition igual.
         */
         void inc(unsigned int s) {
-            Lock l(m);
+            std::unique_lock<std::mutex> lck(m);
             result += s;
         }
 
         unsigned int get_val() {
-            Lock l(m);
+            std::unique_lock<std::mutex> lck(m);
             return result;
         }
 
-        /* [5] Nuestras critical sections son
+        /* [4] Nuestras critical sections son
            get_val y inc_if_you_are_zero
 
-           Descomentar la siguiente implementacion
-           y *borrar* el metodo inc:
+           Descomentar la siguiente implementación
+           y *borrar* el método inc():
 
-           Jamas implementen un metodo protegido
+           Jamas implementen un método protegido
            que no represente a una critical section
-           Alguien desprevenido podria llegar usar
-           a inc pensado que es segura cuando no
+           Alguien desprevenido podría llegar usar
+           a inc() pensado que es segura cuando no
            lo es -> esto es *importante*
+
+           Si queres descubrir las critical sections
+           siempre pensá "que cosas quiere hacer como
+           un todo".
+
+           En nuestro caso queremos incrementar
+           solo si el contador esta en 0.
+           Queremos "checkear e incrementar" de una
+           forma atómica.
           */
         /*
         void inc_if_you_are_zero(unsigned int s) {
-            Lock l(m);
+            std::unique_lock<std::mutex> lck(m);
             if (result == 0) {
                 result += s;
             }
@@ -145,12 +115,12 @@ class AreAnyPrime : public Thread {
             result(result) {}
 
         virtual void run() override {
-            /* Si ya encontramos un numero primo,
+            /* Si ya encontramos un número primo,
              * salimos */
             if (result.get_val() >= 1)
                 return;
 
-            /* Y si no, vemos si nuestro numero es
+            /* Y si no, vemos si nuestro número es
              * primo o no. */
             for (unsigned int i = 2; i < n; ++i) {
                 if (n % i == 0) {
@@ -158,10 +128,10 @@ class AreAnyPrime : public Thread {
                 }
             }
 
-            /* Y si el numero es primo, incrementamos
+            /* Y si el número es primo, incrementamos
              * el contador.... */
 
-            /* [2] Es este inc correcto? Es nuestra
+            /* [2] Es este inc() correcto? Es nuestra
                critical section?
 
                La respuesta es no: queremos
@@ -169,14 +139,14 @@ class AreAnyPrime : public Thread {
                0.
 
                Si preguntamos con get_val y luego
-               incrementamos con inc, no estamos
-               haciendo una unica operacion atomica
+               incrementamos con inc(), no estamos
+               haciendo una única operación atómica
                sino 2 y esto abre la posibilidad a
                una data race condition.
             */
             result.inc(1);
 
-            /* [6] Borrar la linea "result.inc(1)"
+            /* [5] Borrar la línea "result.inc(1)"
                y reemplazarla por la llamada a
                inc_if_you_are_zero
             */
@@ -215,19 +185,23 @@ int main() {
 
     return 0;
 }
-/* [7]
+/* [6]
 
    Recompilar y volver a probar para verificar que
    la race condition fue removida
 
    Conclusion:
-   Metodos protegidos MAS una buena interfaz del
+
+   Métodos protegidos MÁS una buena interfaz del
    monitor diseñada para resolver el problema
    son los que nos evitan las race condition.
 
    Se deben encontrar primero las regiones criticas
    y para cada region critica se debe implementar
-   un metodo en el monitor protegido con un mutex.
+   un método en el monitor protegido con un mutex.
+
+   Recuerda que una critical section es un código
+   que vos queres q se ejecute "atómicamente".
 
    Has llegado al final del ejercicio, y al final
    de este tutorial.

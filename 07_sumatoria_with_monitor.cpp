@@ -1,14 +1,14 @@
 /*
    [1] Ejemplo de encapsulamiento de un objeto
-   compartido y su mutex en un unico objeto.
+   compartido y su mutex en un único objeto.
 
    Este objeto protegido se lo conoce como
    **monitor** (si, lo se, no es un nombre copado,
    de alguna forma quiere decir que el objeto
    monitorea los acceso al objeto compartido).
 
-   El ejemplo deberia imprimir por pantalla el
-   numero 479340.
+   El ejemplo debería imprimir por pantalla el
+   número 479340.
 
    Para verificar que efectivamente no hay una
    race condition, correr esto:
@@ -23,60 +23,12 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <exception>
 
 #define N 10
 
-class Thread {
-    private:
-        std::thread thread;
-
-    public:
-        Thread () {}
-
-        void start() {
-            thread = std::thread(&Thread::run, this);
-        }
-
-        void join() {
-            thread.join();
-        }
-
-        virtual void run() = 0;
-        virtual ~Thread() {}
-
-        Thread(const Thread&) = delete;
-        Thread& operator=(const Thread&) = delete;
-
-        Thread(Thread&& other) {
-            this->thread = std::move(other.thread);
-        }
-
-        Thread& operator=(Thread&& other) {
-            this->thread = std::move(other.thread);
-            return *this;
-        }
-};
-
-class Lock {
-    private:
-        std::mutex &m;
-
-    public:
-        Lock(std::mutex &m) : m(m) {
-            m.lock();
-        }
-
-        ~Lock() {
-            m.unlock();
-        }
-
-    private:
-        Lock(const Lock&) = delete;
-        Lock& operator=(const Lock&) = delete;
-        Lock(Lock&&) = delete;
-        Lock& operator=(Lock&&) = delete;
-
-};
+// Misma clase Thread que en 03_is_prime_parallel_by_inheritance.cpp
+#include "libs/thread.h"
 
 class ResultProtected { // aka monitor
     private:
@@ -92,20 +44,46 @@ class ResultProtected { // aka monitor
         ResultProtected(unsigned int v): result(v) {}
 
         /* [3] *** Importante ***
-           Cada metodo "protegido" de un monitor
-           deberia ser una critical section
+           Cada método "protegido" de un monitor
+           debería ser una critical section
 
-           Poner Locks por todos lados ***NO** es
+           Poner locks por todos lados ***NO** es
            una buena idea. Solo hara que las cosas
            se cuelguen y no funcionen
+
+           En 08_monitor_interface_critical_section.cpp
+           lo vamos a ver bien.
         */
         void inc(unsigned int s) {
-            Lock l(m);
+
+            /*
+              [4] En el ejemplo anterior 06_sumatoria_with_locks_raii.cpp
+              implementamos un objeto RAII llamado Lock.
+
+              Acá vamos a usar el provisto por C++, el
+              std::unique_lock<std::mutex>.
+
+              C++ provee otros mutexes como:
+
+               - lock_guard: equivale a unique_lock y seria más seguro de usar
+                 por q tiene una API publica más reducida.
+                 Lo malo es q no lo podes usar con conditional_variables
+                 (que las veremos pronto)
+               - scoped_lock: te permite hacer lock sobre más de 1 mutex
+                 a la vez.
+                 99.9% de las veces q tengas q lockear más de 1 mutex es
+                 por q tenes un serio problema en el diseño.
+
+              En este caso podríamos usar lock_guard perfectamente
+              pero preferí usar unique_lock por q es el mismo que usare
+              luego en los ejemplos de conditional_variables.
+            */
+            std::unique_lock<std::mutex> lck(m);
             result += s;
         }
 
         unsigned int get_val() {
-            Lock l(m);
+            std::unique_lock<std::mutex> lck(m);
             return result;
         }
 
@@ -116,11 +94,11 @@ class Sum : public Thread {
         unsigned int *start;
         unsigned int *end;
 
-        /* [4] Una referencia al monitor:
+        /* [5] Una referencia al monitor:
            el objeto compartido y su mutex
 
            En general los objetos activos (hilos)
-           no deberian tener referencias a mutexes
+           no deberían tener referencias a mutexes
            ni manejarlos sino tener referencias a
            los monitores y que estos coordinen el
            acceso y protejan al recurso compartido
@@ -134,76 +112,23 @@ class Sum : public Thread {
             start(start), end(end),
             result(result) {}
 
-        virtual void run() {
+        virtual void run() override {
             unsigned int temporal_sum = 0;
             for (unsigned int *p = start; p < end; ++p) {
                 temporal_sum += *p;
             }
 
-            /* [5]  No nos encargamos de proteger
+            /* [6]  No nos encargamos de proteger
                el recurso compartido (unsigned int
                result) sino que el objeto protegido
                (monitor) de tipo ResultProtected sera
                el responsable de protegerlo.
 
                Encapsulamos toda la critical section
-               CS en un unico metodo del monitor.
+               CS en un único método del monitor.
             */
             result.inc(temporal_sum);
         }
-
-        // ***Pregunta***: Usando un monitor con todos sus metodos protegidos evitan una race condition siempre?
-        // ***Respuesta***: NO, es COMPLETAMENTE FALSO
-        //
-        // ***Demostracion***:
-        //
-        // // sea la siguiente funcion que se ejecuta varias veces en paralelo
-        // // con result_protected el mismo objeto compartido por los hilos
-        // void run() {
-        //    int v = result_protected.get_val();
-        //    if (v == 0) {
-        //      result_protected.inc(1);
-        //    }
-        // }
-        //
-        // // si result_protected es inicializado a 0 antes de arrancar, el resultado
-        // // esperado al finalizar el programa es que result_protected valga 1
-        // // sin embargo no necesariamente !!!
-        //
-        // // Para verlo veamos a la funcion f en donde pondremos inline el codigo del monitor:
-        // void run() {
-        //    result_protected.mutex.lock();
-        //    int v = result_protected.result;
-        //    result_protected.mutex.unlock();
-        //
-        //    if (v == 0) {
-        //      result_protected.mutex.lock();
-        //      result_protected.result += 1;
-        //      result_protected.mutex.unlock();
-        //    }
-        // }
-        //
-        // // se ve que hay dos regiones criticas en vez de una? Al final hay una race condition
-        //
-        // ***Solucion***:
-        // void run() {
-        //    result_protected.inc_only_if_you_are_in_zero(1);
-        // }
-        //
-        // void ResultProtected::inc_only_if_you_are_in_zero(unsigned int s) {
-        //    this->mutex.lock();
-        //    if (this->result == 0) {
-        //       this->result += s;
-        //    }
-        //    this->mutex.unlock();
-        // }
-        //
-        // ***Conclusion***: Metodos protegidos MAS una buena interfaz del monitor diseñada para resolver el problema
-        // son los que nos evitan las race condition.
-        //
-        //      *** Se deben encontrar primero las regiones criticas y para ***
-        //      *** cada region critica se debe implementar un metodo en el ***
-        //      *** monitor.                                                ***
 };
 
 int main() {
@@ -237,8 +162,13 @@ int main() {
 
     return 0;
 }
-/* [6]
-   Has llegado al final del ejercicio, continua
-   con el siguiente.
+/* [7]
+
+   Medita sobre [4] y [6]. La parte realmente complicada
+   de trabajar con threads, mutexes y monitores es la descubrir
+   las critical sections reales.
+
+   En 08_monitor_interface_critical_section.cpp vamos
+   a ver esto con otro ejemplo.
 */
 

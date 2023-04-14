@@ -1,11 +1,11 @@
 /*
    [1]
-   Ejemplo de como ejecutar una funcion/functor en
+   Ejemplo de como ejecutar una función/functor en
    un hilo separado en C++
 
    Se ejecutan varios functors en paralelo en donde
    el objeto thread tiene una referencia al objeto
-   functor (usamos composicion)
+   functor (usamos composición)
 */
 
 #include <iostream>
@@ -48,16 +48,21 @@ int main() {
     std::vector<std::thread> threads;
 
     for (int i = 0; i < N; ++i) {
-        /* [2] Aca es donde usamos composicion donde
+        /* [2] Acá es donde usamos composición donde
                 "std::thread tiene un IsPrime"
 
            El operator call del functor se ejecutara
            en el hilo lanzado por el constructor del
            objeto std::thread
 
-           Es por esta razon que tuvimos que
-           sobrecargar el operador call, para que
-           std::thread sepa que que correr.
+           std::thread recibe una **función** pero
+           en la practica, como las funciones no tienen
+           estados, es mucho más **útil** pasarle
+           un **functor**
+
+           Es por esta razón que tuvimos que
+           sobrecargar el operador call de nuestro functor:
+           para que std::thread sepa que correr.
         */
         threads.push_back(std::thread {
                             IsPrime(nums[i],
@@ -66,7 +71,7 @@ int main() {
     }
 
     /* ************************************** */
-    /* Ahora: Todos los hilos estan corriendo */
+    /* Ahora: Todos los hilos están corriendo */
     /* ************************************** */
 
     /* [3] Esperamos a que cada hilo termine.
@@ -76,9 +81,9 @@ int main() {
 
        Siempre es necesario hacer un join para
        liberar los recursos. No hacer un join
-       implica leaks (solo en muy exoticoss y
-       mas que justificados casos se puede
-       precindir de un join).
+       implica leaks (solo en muy exóticos y
+       más que justificados casos se puede
+       prescindir de un join).
     */
     for (int i = 0; i < N; ++i) {
         threads[i].join();
@@ -100,7 +105,7 @@ int main() {
    Corre el ejecutable con "time":
     time ./02_is_prime_parallel_by_composition.exe
 
-   Compara los tiempos con la ejecucion de
+   Compara los tiempos con la ejecución de
    01_is_prime_sequential.exe
 
    Mejoro el tiempo "real"? y el "user"?

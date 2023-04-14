@@ -1,23 +1,35 @@
 /*
    [1]
-   Ejemplo de como ejecutar una funcion/functor en
+   Ejemplo de como ejecutar una función/functor en
    un hilo separado en C++
 
-   Esta vez, en vez de usar composicion usaremos
-   herencia.
+   Esta vez, en vez de usar composición usaremos
+   **herencia**.
+
    Para ello crearemos una objeto Thread que
-   ejecutara un metodo virtual en su  propio hilo
+   ejecutara un método virtual en su  propio hilo
    definido por las clases hijas que hereden de
    Thread
 
    Cuando el objeto functor encapsula dentro de él
    el concepto de hilo se dice que el objeto es un
    "objeto activo".
+
+
+   Threads por herencia es la forma de usar threads
+   en lenguajes como Java.
+
+   Otros, como Python, son iguales a C++ y permiten
+   las dos opciones (composición y herencia).
+
+   Golang en cambio tiene go-rutinas que son
+   "threads ligeros" manejados por el runtime de Golang.
 */
 
 #include <iostream>
 #include <vector>
 #include <thread>
+#include <exception>
 
 #define N 10
 
@@ -29,95 +41,118 @@ class Thread {
         Thread () {}
 
         void start() {
-            /* [2] Lanzamos el thread que correra
-               siempre la misma funcion (Thread::run)
+            /* [2] Lanzamos el thread que correrá
+               siempre la misma función (Thread::main)
 
-               Como Thread::run es un **metodo**
-               sin parametros y std::thread espera
-               a una **funcion** podemos ver a
-               Thread::run como una funcion que
+               Como Thread::main es un **método**
+               sin parámetros y std::thread espera
+               a una **función** podemos ver a
+               Thread::main como una función que
                recibe como primer argumento al
                objeto this (tal como en los TDA de C!)
 
                std::thread soporta correr una
-               funcion con argumentos con la llamada:
+               función con argumentos con la llamada:
 
                   std::thread( funcion, arg1, arg2, ...)
 
                Por lo tanto
                     std::thread( metodo, this )
 
-               es equivalante a correr el metodo
+               es equivalente a correr el método
                sin argumentos en un thread.
 
-               Por ser polimorfico el metodo
-               Thread::run de cada objeto ejecutara
-               un codigo particular en el thread.
+               Como Thread::main llama a Thread::run
+               y Thread::run es un método **polimórfico**,
+               cada objeto ejecutara
+               un código particular en el thread.
 
-               Objetos distintos podran correr en
-               sus propios threads con esta unica
-               implementacion de Thread mientras
+               Objetos distintos podrán correr en
+               sus propios threads con esta única
+               implementación de Thread mientras
                hereden de Thread y creen sus propias
-               versiones del metodo run.
+               versiones del método run.
             */
             thread = std::thread(
-                                    &Thread::run,
+                                    &Thread::main,
                                     this
                                 );
+        }
+
+        // [3]
+        //
+        // Este método es el que correrá en su propio thread.
+        //
+        // Obviamente el que hacer esta dentro de Thread::run
+        // que es polimórfico
+        //
+        // La idea de Thread::main es que me permite poner
+        // un try-catch y atrapar cualquier excepción que
+        // se lance en Thread::run.
+        //
+        // Si una excepción se escapa de la función que esta
+        // corriendo en un thread, el program termina con un abort
+        //
+        // Not nice.
+        //
+        // Quienes implementen Thread::run deberían atrapar
+        // las excepciones ellos. El try-catch de Thread::main
+        // es solo como último recurso.
+        void main() {
+            try {
+                this->run();
+            } catch(const std::exception &err) {
+                // Nota: por simplicidad estoy haciendo unos prints.
+                // Código productivo debería *loggear* el error, no solo
+                // prints.
+                std::cerr << "Unexpected exception: " << err.what() << "\n";
+            } catch(...) {
+                std::cerr << "Unexpected exception: <unknown>\n";
+            }
         }
 
         void join() {
             thread.join();
         }
 
-        /* [3] Virtual puro para forzar una
-           definicion en las clases hijas
+        /* [4] Virtual puro para forzar una
+           definición en las clases hijas.
+
+           Sera responsabilidad de ellas implementar lo que quieran
+           que corran en un thread aquí.
         */
         virtual void run() = 0;
 
 
-        /* [4] Destructor virtual: sSiempre hacerlo
+        /* [5] Destructor virtual: siempre hacerlo
            virtual si pensamos en usar herencia.
         */
         virtual ~Thread() {}
 
 
 
-        /* [5] No tiene sentido copiar hilos, asi
+        /* [6] No tiene sentido copiar hilos, así
            que forzamos a que no se puedan copiar.
         */
         Thread(const Thread&) = delete;
         Thread& operator=(const Thread&) = delete;
 
-        /* [6] Pero si tiene sentido que un hilo
-           pueda moverse asi que implementamos su
-           constructor y operador asigancion por
-           movimiento
+        /* [7] Y aunque tiene sentido, vamos a ver
+           que es un peligro permitir mover un thread
+           así que también vamos a prohibir el move.
+
+           Lo vas a entender cuando veas [10]
         */
-        Thread(Thread&& other) {
-            /*
-               [7] Explicitamente decimos:
-                    "move el hilo other.thread
-                    hacia this->thread pero no
-                    copies"
-
-            */
-            this->thread = std::move(other.thread);
-        }
-
-
-        Thread& operator=(Thread&& other) {
-            this->thread = std::move(other.thread);
-            return *this;
-        }
+        Thread(Thread&& other) = delete;
+        Thread& operator=(Thread&& other) = delete;
 
 };
 
 
-/* [8] Esto es lo que se conoce como un
-        "objeto activo".
+/* [8] Un objeto q encapsula a un thread se lo conoce como un
+       "objeto activo".
 
-   Un objeto que tiene sus atributos y su logica
+   Un objeto que tiene sus atributos y su lógica
    (que encapsula un algoritmo o una tarea) pero
    que vive en su propio hilo
 */
@@ -131,6 +166,14 @@ class IsPrime : public Thread {
             n(n),
             result(result) {}
 
+        /* [9] El contenido de este método sera el que se ejecute
+           en el thread
+
+           Nota: las keywords virtual y override en una clase hija
+           no son necesarias pero **ayudan** a que quede explicita
+           la intención: estamos **sobrescribiendo** un método virtual
+           heredado.
+        */
         virtual void run() override {
             for (unsigned int i = 2; i < n; ++i) {
                 if (n % i == 0) {
@@ -155,23 +198,55 @@ int main() {
     std::vector<Thread*> threads;
 
     for (int i = 0; i < N; ++i) {
-        /* [9] Aca es donde creamos nuestros objetos */
+        /* [10] Acá es donde creamos nuestros objetos
+
+           Por que usamos el heap?
+
+           La vas a flipar:
+
+           Cuando hagas Thread::start() vas a estar pasándole
+           a std::thread un puntero this (un puntero al objeto IsPrime)
+
+           No te olvides q esto no es más que una **dirección**
+           de la memoria donde IsPrime esta "en ese momento"
+
+           Si guardas el objeto IsPrime en el stack de main
+           y luego lo moves a otro lado, tu objeto estará ahora
+           en **otro lugar de la memoria** y esa **dirección** q le pasaste
+           a std::thread ya **no** sera la dirección "actual"
+           de IsPrime..
+
+           En otras palabras std::thread estará usando un puntero/dirección
+           con contenido indefinido.
+
+           Vos podrías ser cauteloso y **no** mover a IsPrime nunca
+           pero... que pasa si guardas IsPrime en un container
+           como std::vector y este te lo mueve?
+
+           Game over.
+
+           Esto se lo conoce como "pointer instability" y aunque hay
+           algunos containers que garantizan estabilidad, es tricky.
+
+           Por eso usamos el heap: para que quede en un solo lugar
+           y cualquier puntero a IsPrime se mantenga válido.
+         * */
         Thread *t = new IsPrime(
                             nums[i],
                             results[i]);
+        threads.push_back(t);
 
-        /* [10] y aca los "activamos"
-           (lanzamos un thread)
+        /* [11] y acá "activamos" a los "objetos activos"
+           (lanzamos el thread)
         */
         t->start();
-        threads.push_back(t);
     }
 
     /* ************************************** */
-    /* Ahora: Todos los hilos estan corriendo */
+    /* Ahora: Todos los hilos están corriendo */
     /* ************************************** */
 
-    /* [11] Esperamos a que cada hilo termine.
+    /* [12] Esperamos a que cada hilo termine.
        Cada join bloqueara al hilo llamante (main)
        hasta que el hilo sobre el cual se le hace
        join (threads[i]) termine
@@ -197,7 +272,7 @@ int main() {
     return 0;
 }
 
-/* [12]
+/* [13]
    Has llegado al final del ejercicio, continua
    con el siguiente.
 */

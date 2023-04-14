@@ -1,8 +1,11 @@
 /* [1]
-   Ejemplo de un functor: la encapsulacion de una
-   funcion o algoritmo en un objeto.
+
+   Antes de arrancar con threads vamos a ver el concepto de
+   "functor": la encapsulación de una
+   función o algoritmo en un objeto.
+
    Para darle una sintaxis copada (y para que sea
-   compatible con la libreria estandar de C++)
+   compatible con la librería estándar de C++)
    vamos a sobrecargarle el operador call.
 */
 
@@ -10,7 +13,7 @@
 #include <iostream>
 #define N 10
 
-/* [2]  Functor: una funcion hecha objeto */
+/* [2]  Functor: una función hecha objeto */
 class IsPrime {
     private:
         unsigned int n;
@@ -18,21 +21,22 @@ class IsPrime {
 
     public:
         /* [3] Un functor permite desacoplar el
-           pasaje de los paramentros de la
-           ejecucion de la funcion/algoritmo.
+           pasaje de los parámentros de la
+           ejecución de la función/algoritmo.
 
-           En este caso, el functor recibe 2 parametros:
-            - n, el numero a determinar is es o no primo
+           En este caso, el functor recibe 2 parámetros:
+            - n, el número a determinar si es o no primo
             - result, donde guardar el resultado
         */
         IsPrime(unsigned int n, bool &result) :
             n(n),
             result(result) {}
 
-        /* [4] El algoritmo para saber si un numero
+        /* [4] El algoritmo para saber si un número
            es primo o no (version simplificada)
-           Notese como el algoritmo no recibe ningun
-           parametro explicito sino que estos fueron
+
+           Nótese como el algoritmo **no** recibe ningún
+           parámetro explicito sino que estos fueron
            pasados por el constructor.
         */
         void run() {
@@ -48,24 +52,25 @@ class IsPrime {
 
         /* [5]
            Sobrecarga del operator call. Esto
-           permite invocar a IsPrime con la misma
-           sintaxis que se invoca a una funcion.
+           permite llamar a IsPrime con la misma
+           sintaxis que se invoca a una función.
 
            Ej:
 
            IsPrime f(n, r); // <- instancio el objeto
+
            f();             // <- lo llamo como si
-                            //    fuera una funcion
+                            //    fuera una función
 
            Aunque pueda parecer solo syntax sugar,
-           la libreria estandar de C++ espera esta
+           la librería estándar de C++ espera esta
            sintaxis en algunos casos.
         */
         void operator()() {
             this->run(); /* [6]
-                            podriamos haber puesto
-                            el codigo de
-                            IsPrime::run aqui directamente
+                            podríamos haber puesto
+                            el código de
+                            IsPrime::run aquí directamente
                          */
         }
 
@@ -83,23 +88,27 @@ int main() {
     for (int i = 0; i < N; ++i) {
         /* [7]
            Creamos un functor (function object)
-           con los argumentos de la funcion pero
-           esta no se invoca aqui
+           con los argumentos de la función pero
+           esta no se invoca aquí
         */
         IsPrime is_prime = IsPrime(nums[i],
                                     results[i]);
 
         /* [8]
-           Recien aqui se invoca a la funcion
+           Recién aquí se invoca a la función
            "is prime".
 
            Los functors permiten retrasar las
            llamadas a funciones: el pasaje de
-           argumentos se desacopla de la invocacion
+           argumentos se desacopla de la invocación
            del algoritmo.
+
+           En este caso le pasamos todos los parámetros
+           al constructor y ninguno a la llamada.
+           En otros casos tal vez quieras pasar algunos
+           en el constructor y otros en la llamada.
         */
-        is_prime();  // o equivalentemente a
-                     // is_prime.run();
+        is_prime();  // <- equivale a is_prime.run();
     }
 
 
@@ -120,8 +129,17 @@ int main() {
      user
      sys
 
-   Lee la pagina de manual con:
+   Lee la página de manual con:
      man time
+
+   Functors es un tópico ligeramente exótico presente
+   en lenguajes como C++ y Java q **no** ven a las funciones/métodos
+   como objetos puros.
+
+   El functor encapsula dicha función/método.
+
+   Lenguajes como Python ven a las función/métodos como objetos directamente
+   y el concepto de functor es menos explicito.
 
    Has llegado al final del ejercicio, continua
    con el siguiente.

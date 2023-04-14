@@ -1,16 +1,16 @@
 /*
    [1]
-   Para evitar que multiples hilos accedan a un
+   Para evitar que múltiples hilos accedan a un
    recurso compartido (variable/objeto) se usa un
-   mecanismo de coordinacion llamado Mutex
-   (Mutal Exclusion)
+   mecanismo de coordinación llamado Mutex
+   (Mutual Exclusion)
 
-   El ejemplo deberia imprimir por pantalla el
-   numero 479340 siempre.
+   El ejemplo debería imprimir por pantalla el
+   número 479340 siempre.
 
    Para verificar que efectivamente no hay una
    race condition, correr esto:
-     for i in {0..1000}
+     for i in {0..10000}
      do
         ./05_sumatoria_with_mutex.exe
      done | uniq
@@ -21,40 +21,13 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <exception>
 
 #define N 10
+#define ROUNDS 1000000
 
-class Thread {
-    private:
-        std::thread thread;
-
-    public:
-        Thread () {}
-
-        void start() {
-            thread = std::thread(&Thread::run, this);
-        }
-
-        void join() {
-            thread.join();
-        }
-
-        virtual void run() = 0;
-        virtual ~Thread() {}
-
-        Thread(const Thread&) = delete;
-        Thread& operator=(const Thread&) = delete;
-
-        Thread(Thread&& other) {
-            this->thread = std::move(other.thread);
-        }
-
-        Thread& operator=(Thread&& other) {
-            this->thread = std::move(other.thread);
-            return *this;
-        }
-};
-
+// Misma clase Thread que en 03_is_prime_parallel_by_inheritance.cpp
+#include "libs/thread.h"
 
 class Sum: public Thread {
     private:
@@ -86,11 +59,15 @@ class Sum: public Thread {
             start(start), end(end),
             result(result), m(m) {}
 
-        virtual void run() {
-            unsigned int temporal_sum = 0;
-            for (unsigned int *p = start; p < end; ++p) {
-                temporal_sum += *p;
+        virtual void run() override {
+            unsigned int temporal_sum;
+            for (int round = 0; round < ROUNDS; ++round) {
+                temporal_sum = 0;
+                for (unsigned int *p = start; p < end; ++p) {
+                    temporal_sum += *p;
+                }
             }
+
 
             /* [3] Tomamos (adquirimos) el mutex.
                Cualquier otro hilo (incluido el
@@ -119,13 +96,13 @@ int main() {
                              123891 };
     unsigned int result = 0;
 
-    /* [5] Un unico mutex; No un mutex por hilo
+    /* [5] Un único mutex; No un mutex por hilo
 
        [6] Hay otras variantes de mutexes como
        recursive_mutex y timed_mutex que pueden
-       resultar "tentadoramente mas faciles y
+       resultar "tentadoramente más fáciles y
        convenientes" pero que pueden en realidad
-       enmascarar un mal diseño detras de escena
+       enmascarar un mal diseño detrás de escena
 
        No usarlas a menos que no haya otra
        alternativa.
@@ -158,6 +135,30 @@ int main() {
     return 0;
 }
 /* [7]
+
+   Extra challenges:
+
+    - En [3] proba en mover el `m.lock()` al **principio** del método run.
+      Deberías seguir sin una RC **pero** vas a ver q todo funciona más lento.
+
+      Probar en medir los tiempos con `time`. Fíjate el tiempo "real".
+      (nota: si no ves mucha diferencia podes probar en aumentar el valor
+       de ROUNDS para que se note)
+
+      Cuanto más grande sea la zona cubierta por un lock y cuantos
+      más threads **compitan por adquirir el lock**,
+      más se van a trabar los threads y menos concurrente va a ser
+      el procesamiento (cada vez se parecerá a un sistema secuencial).
+
+      En estos casos se dice que hay **contention** sobre el lock
+      o sobre el recurso compartido.
+
+    - En vez de crear un único mutex en [5] y quedarse
+      con una referencia en [2], proba en tener un mutex **propio**
+      en cada functor (en [2]).
+
+      Te sigue funcionando o volvieron las RCs?
+
    Has llegado al final del ejercicio, continua
    con el siguiente.
 */

@@ -1,9 +1,9 @@
 /*
    [1] Ejemplo de RAII encapsulando la toma y
-   liberacion de un mutex: clase Lock
+   liberación de un mutex: clase Lock
 
-   El ejemplo deberia imprimir por pantalla el
-   numero 479340.
+   El ejemplo debería imprimir por pantalla el
+   número 479340.
      for i in {0..1000}
      do
         ./06_sumatoria_with_locks_raii.exe
@@ -15,48 +15,22 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <exception>
 
 #define N 10
+#define ROUNDS 1
 
-class Thread {
-    private:
-        std::thread thread;
+// Misma clase Thread que en 03_is_prime_parallel_by_inheritance.cpp
+#include "libs/thread.h"
 
-    public:
-        Thread () {}
-
-        void start() {
-            thread = std::thread(&Thread::run, this);
-        }
-
-        void join() {
-            thread.join();
-        }
-
-        virtual void run() = 0;
-        virtual ~Thread() {}
-
-        Thread(const Thread&) = delete;
-        Thread& operator=(const Thread&) = delete;
-
-        Thread(Thread&& other) {
-            this->thread = std::move(other.thread);
-        }
-
-        Thread& operator=(Thread&& other) {
-            this->thread = std::move(other.thread);
-            return *this;
-        }
-};
-
-/* [2] Encapsulacion RAII del recurso
+/* [2] Encapsulación RAII del recurso
    "mutex tomado"
 
    Como pueden ver, la memoria no es
-   el unico recurso que hay que liberar.
+   el único recurso que hay que liberar.
 
    C++11 ya ofrece el mismo objeto std::lock_guard
-   pero mostramos esta implementacion para
+   pero mostramos esta implementación para
    que quede como ejemplo de como RAII puede
    servirnos para crear construcciones de alto
    nivel.
@@ -85,7 +59,7 @@ class Lock {
         /* [5] No tiene sentido copiar locks,
            forzar a que no se pueda.
            y tampoco tiene mucho sentido moverlos
-                (aunque es cuestionable)
+           (aunque es cuestionable)
         */
         Lock(const Lock&) = delete;
         Lock& operator=(const Lock&) = delete;
@@ -110,10 +84,13 @@ class Sum: public Thread {
             start(start), end(end),
             result(result), m(m) {}
 
-        virtual void run() {
-            unsigned int temporal_sum = 0;
-            for (unsigned int *p = start; p < end; ++p) {
-                temporal_sum += *p;
+        virtual void run() override {
+            unsigned int temporal_sum;
+            for (int round = 0; round < ROUNDS; ++round) {
+                temporal_sum = 0;
+                for (unsigned int *p = start; p < end; ++p) {
+                    temporal_sum += *p;
+                }
             }
 
             Lock l(m);              // -+-
@@ -121,10 +98,10 @@ class Sum: public Thread {
                                     //  | la CS
                                     //  |
         }   // ---------------------------+-
-            /* [6] el mutex es liberado aqui cuando
+            /* [6] el mutex es liberado aquí cuando
                la variable "l" es destruida por irse
                de scope.
-               Liberacion del mutex automatica!!
+               Liberación del mutex automática!!
             */
 };
 
@@ -161,6 +138,28 @@ int main() {
     return 0;
 }
 /* [7]
+
+   Challenge: lanza una excepción en el método Sum::run.
+   En un experimento lánzala *antes* de tomar el lock, en otra *después*
+   de tomar el lock.
+
+   Obviamente que la suma total ya no sera correcta pero, el programa
+   se te colgó o no?
+
+   Hace el mismo experimento pero con el código en 05_sumatoria_with_mutex.cpp:
+   proba q pasa si se lanza una excepción *antes* de tomar el lock,
+   *luego* de tomar el lock (pero *antes* de liberarlo) y que pasa si se lanza
+   *luego* de liberarlo.
+
+   En alguno de esos experimentos el programa se te colgara por que habrá threads
+   que querrán tomar el lock y no podrán por que otro ya lo tomo y se olvido
+   de liberarlo.
+
+   Eso es un **deadlock**
+
+   Ahora enteras por que se hace tanto **énfasis** en usar RAII:
+   liberar la memoria **no** es lo único que hay que liberar.
+
    Has llegado al final del ejercicio, continua
    con el siguiente.
 */
