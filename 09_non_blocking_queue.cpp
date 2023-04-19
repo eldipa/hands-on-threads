@@ -166,6 +166,7 @@ void productor_de_numeros(Queue& q) {
 
     bool ok = false;
     for (int i = 0; i < MAX_NUM; ++i) {
+        ok = false;
         sleep_a_little(generator);
 
         while (not ok)
@@ -188,6 +189,7 @@ void consumidor_de_numeros(Queue& q, int& resultado_parcial) {
     int suma = 0;
     int n;
     do {
+        ok = false;
         while (not ok)
             ok = q.try_pop(n);
 
