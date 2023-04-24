@@ -162,6 +162,17 @@ class Queue {
                 throw std::runtime_error("The queue is already closed.");
             }
             closed = true;
+
+            /* Probablemente estoy mintiendo aquí ya q no se si la queue
+             * esta vacio o no realmente **pero** en el caso de que lo
+             * este puede que algún thread este bloqueado en el pop().
+             *
+             * Si es así este notify_all() lo va a despertar y ese thread
+             * tendrá la oportunidad de ver q la queue esta cerrada y
+             * q no debe continuar con el pop()
+             *
+             * */
+            is_not_empty.notify_all();
         }
 
     private:
@@ -311,5 +322,23 @@ int main(int argc, char *argv[]) {
  * Si drain es true, close() debe cerrar la queue y luego vaciarla
  * completamente.
  *
+ *
+ * (Challenge)^2:
+ *
+ * En ciertas ocasiones hay N productores q pushean datos a una queue y
+ * no esta claro cuando la queue hay q cerrarla.
+ *
+ * No hay ningún otro thread q detecte el fin de los productores y pueda
+ * llamar a close() (como lo esta haciendo main() en este ejercicio).
+ *
+ * En ese caso se podría modificar la queue para que tenga un contador
+ *  - la queue lo inicializa con la cantidad de productores N
+ *  - cada llamada a close() decrementa en 1 ese contador y si es cero hace realmente
+ *  el close.
+ *
+ * Así, N productores llaman a close() y solo el último realmente cerrara la queue.
+ *
+ * Notar q este esquema es solo valido cuando N es fijo, fijate
+ * si ves cual seria el issue si permitís q N sea dinámico.
  * */
 

@@ -123,6 +123,7 @@ class Queue {
             }
 
             closed = true;
+            is_not_empty.notify_all();
         }
 
     private:
@@ -232,6 +233,7 @@ class Queue<void*> {
             }
 
             closed = true;
+            is_not_empty.notify_all();
         }
 
     private:
