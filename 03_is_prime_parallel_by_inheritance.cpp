@@ -223,10 +223,21 @@ int main() {
            pero... que pasa si guardas IsPrime en un container
            como std::vector y este te lo mueve?
 
-           Game over.
+           >> Game over <<
 
            Esto se lo conoce como "pointer instability" y aunque hay
            algunos containers que garantizan estabilidad, es tricky.
+
+           Tenes varias alternativas:
+
+            - usas containers q provean pointer stability como std::list
+            - usas containers pre-allocados y te aseguras q no sean
+              redimensionados (como std::vector cuando le seteas capacity)
+            - o usas el heap y asi tus objetos no seran movidos *aun*
+              si el container se mueve/redimensiona
+
+           La ultima opcion es la menos eficiente pero es **mucho**
+           mas segura.
 
            Por eso usamos el heap: para que quede en un solo lugar
            y cualquier puntero a IsPrime se mantenga válido.
@@ -273,6 +284,65 @@ int main() {
 }
 
 /* [13]
+
+   Challenge: reemplaza el std::vector<Thread*> por std::vector<Thread>
+   con un capacity inicial de N
+
+   O sea:
+
+    std::vector<Thread> threads(N);
+
+   Vas a tener q ajustar la creacion de los threads obviamente
+   para q no sea en el heap sino *directamente* dentro del container:
+
+    threads.emplace_back(nums[i], results[i]);
+
+   Que va a pasar? Deberia funcionar sin problema.
+
+   Al haber reservado capacidad para N threads vas a poder
+   agregar hasta N threads sin reallocs.
+
+   Y como los threads los creaste directamente dentro
+   del container con emplace_back, no va a ver moves
+
+   Asi, ese puntero "this" q esta en Thread::start
+   sigue apuntando a un objeto valido.
+
+   [14]
+
+   Ahora lo vamos a romper.
+
+   Cambia el capacity a 1:
+
+    std::vector<Thread> threads(1);
+
+
+   Que va a pasar? El emplace_back no va a encontrar espacio
+   y va a redimensionar (realloc) el vector.
+
+   Si tenes suerte, el vector va a tener espacio sin necesidad
+   de moverse pero sino, el vector se **movera** a otra
+   parte de la memoria con mas espacio.
+
+   Y entonces, ese puntero "this" en Thread::start, va a estar
+   apuntando "al viejo" objeto, no al que se movio.
+
+   Tal vez se te va a romper, tal vez no :D
+
+   [15]
+
+   Ahora lo vamos a romper, pero de verdad.
+
+   Cambia el capacity a N como era antes pero ahora no uses
+   emplace_back sino crea el thread afuera y luego movelo
+   al container con un std::move + push_back:
+
+    IsPrime t(nums[i], results[i]);
+    threads.push_back(std::move(t));
+
+   Que va a pasar? Deberias tener crash garantizado.
+
+   [16]
    Has llegado al final del ejercicio, continua
    con el siguiente.
 */

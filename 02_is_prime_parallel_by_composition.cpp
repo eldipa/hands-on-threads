@@ -45,6 +45,18 @@ int main() {
                             132130871 };
     bool results[N];
 
+    // [4]
+    // Notar q estamos usando un *vector* de std::thread
+    //
+    // Esto esta bien por que los functors IsPrime no
+    // tienen punteros a si mismo (this) y por ende
+    // no seran afectados cuando el vector se resizee
+    // y se mueva.
+    //
+    // No lo ves? No pasa nada!! En el proximo ejemplo
+    // lo vas a ver mejor.
+    //
+    // Toma nota!
     std::vector<std::thread> threads;
 
     for (int i = 0; i < N; ++i) {
@@ -101,7 +113,7 @@ int main() {
     return 0;
 }
 
-/* [4]
+/* [5]
    Corre el ejecutable con "time":
     time ./02_is_prime_parallel_by_composition.exe
 
