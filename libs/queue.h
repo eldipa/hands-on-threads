@@ -5,6 +5,7 @@
 #include <condition_variable>
 #include <queue>
 #include <deque>
+#include <climits>
 
 struct ClosedQueue : public std::runtime_error {
     ClosedQueue() : std::runtime_error("The queue is closed") {}
@@ -35,7 +36,8 @@ class Queue {
         std::condition_variable is_not_empty;
 
     public:
-	Queue(const unsigned int max_size) : max_size(max_size), closed(false) {}
+	Queue() : max_size(UINT_MAX-1), closed(false) {}
+	explicit Queue(const unsigned int max_size) : max_size(max_size), closed(false) {}
 
 
         bool try_push(T const& val) {
@@ -145,7 +147,7 @@ class Queue<void*> {
         std::condition_variable is_not_empty;
 
     public:
-	Queue(const unsigned int max_size) : max_size(max_size), closed(false) {}
+	explicit Queue(const unsigned int max_size) : max_size(max_size), closed(false) {}
 
 
         bool try_push(void* const & val) {
@@ -246,7 +248,7 @@ class Queue<void*> {
 template<typename T>
 class Queue<T*> : private Queue<void*> {
     public:
-	Queue(const unsigned int max_size) : Queue<void*>(max_size) {}
+	explicit Queue(const unsigned int max_size) : Queue<void*>(max_size) {}
 
 
         bool try_push(T* const& val) {
