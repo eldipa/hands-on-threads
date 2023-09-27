@@ -18,7 +18,8 @@
  *    proteger al objeto Attendance.
  *    Tendrás que descubrir cual/cuales son las **critical sections**
  *    y proteger el acceso. (Nota: la clase Attendance **no** la podes
- *    modificar, el resto del código si).
+ *    modificar, por lo que tendras q crear un AttendanceProtected
+ *    y modificar a los Student).
  *
  *  - La otra opción es **no** compartir la lista de asistencia y
  *    en cambio hacer que todos los alumnos (Student) compartan
@@ -54,6 +55,7 @@ namespace {
     const int STUDENTS_CNT = 100;
 }
 
+// NO MODIFICAR (no hagas trampa)
 class Attendance {
     private:
         std::map<int, bool> list;
