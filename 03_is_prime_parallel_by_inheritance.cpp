@@ -285,12 +285,12 @@ int main() {
 
 /* [13]
 
-   Challenge: reemplaza el std::vector<Thread*> por std::vector<Thread>
+   Challenge: reemplaza el std::vector<Thread*> por std::vector<IsPrime>
    con un capacity inicial de N
 
    O sea:
 
-    std::vector<Thread> threads(N);
+    std::vector<IsPrime> threads(N);
 
    Vas a tener q ajustar la creacion de los threads obviamente
    para q no sea en el heap sino *directamente* dentro del container:
@@ -314,7 +314,7 @@ int main() {
 
    Cambia el capacity a 1:
 
-    std::vector<Thread> threads(1);
+    std::vector<IsPrime> threads(1);
 
 
    Que va a pasar? El emplace_back no va a encontrar espacio
@@ -343,6 +343,11 @@ int main() {
    Que va a pasar? Deberias tener crash garantizado.
 
    [16]
+   Bonus question: por q en el challenge anterior usamos
+   std::vector<IsPrime> y no std::vector<Thread> ? Por q
+   no se puede instanciar std::vector<Thread> ?
+
+   [17]
    Has llegado al final del ejercicio, continua
    con el siguiente.
 */
