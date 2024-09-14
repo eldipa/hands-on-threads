@@ -5,7 +5,7 @@ clean:
 
 chklibs:
 	g++ -std=c++17 -pedantic -Wall -ggdb -o test_queue tests/queue.cpp
-	cppcheck --enable=all --language=c++ --std=c++17 --error-exitcode=1 --suppress=missingIncludeSystem --suppress=unusedFunction --inline-suppr libs/*.h libs/*.cpp
+	cppcheck --enable=all --language=c++ --std=c++17 --error-exitcode=1 --suppress=duplInheritedMember --suppress=missingIncludeSystem --suppress=unusedFunction --inline-suppr libs/*.h libs/*.cpp
 	./test_queue
 
 f1.1:

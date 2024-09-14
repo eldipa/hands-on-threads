@@ -57,6 +57,8 @@ class Thread : public Runnable {
             _keep_running = false;
         }
 
+        // Note: asking for is_alive is well defined *only if* the thread
+        // was started (you called Thread::start())
         bool is_alive() const override {
             return _is_alive;
         }
