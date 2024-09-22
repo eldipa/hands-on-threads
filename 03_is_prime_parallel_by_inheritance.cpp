@@ -290,7 +290,8 @@ int main() {
 
    O sea:
 
-    std::vector<IsPrime> threads(N);
+    std::vector<IsPrime> threads;
+    threads.reserve(N);
 
    Vas a tener q ajustar la creacion de los threads obviamente
    para q no sea en el heap sino *directamente* dentro del container:
@@ -314,7 +315,8 @@ int main() {
 
    Cambia el capacity a 1:
 
-    std::vector<IsPrime> threads(1);
+    std::vector<IsPrime> threads;
+    threads.reserve(1);
 
 
    Que va a pasar? El emplace_back no va a encontrar espacio
