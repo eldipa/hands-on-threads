@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <complex>
+#include <stdexcept>
 
 /*
  * A small test for Queue<T> to ensure that it works

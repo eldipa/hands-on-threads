@@ -43,6 +43,7 @@
 #include <random>
 #include <map>
 #include <algorithm>
+#include <stdexcept>
 
 // Misma clase Thread que en 03_is_prime_parallel_by_inheritance.cpp
 #include "libs/thread.h"

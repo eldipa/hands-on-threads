@@ -30,6 +30,7 @@
 #include <vector>
 #include <thread>
 #include <exception>
+#include <stdexcept>
 
 #define N 10
 
